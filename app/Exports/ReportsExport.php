@@ -3,6 +3,7 @@
 
 namespace App\Exports;
 use App\Models\User;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -12,9 +13,11 @@ class ReportsExport implements FromCollection, WithMapping, WithHeadings
     public function collection()
     {
         $adviser = User::find(auth()->id());
-        $cashLoan = $adviser->cashLoan()->whereNotNull('loan_amount')->get()->toArray();
+        $cashLoan = $adviser->cashLoan()->whereNotNull('loan_amount')
+            ->whereDate('created_at', Carbon::today())->get()->toArray();
         $reports = collect($cashLoan);
-        $homeLoan = $adviser->homeLoan()->whereNotNull('property_value')->whereNotNull('down_payment_amount')->get()->toArray();
+        $homeLoan = $adviser->homeLoan()->whereNotNull('property_value')->whereNotNull('down_payment_amount')
+            ->whereDate('created_at', Carbon::today())->get()->toArray();
         if (count($homeLoan)) {
             $reports = $reports->merge(collect($homeLoan));
         }
